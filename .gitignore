@@ -1,0 +1,5 @@
+# executables
+*.exe
+*.ipynb
+*.o
+*.obj
