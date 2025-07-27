@@ -5,7 +5,7 @@ from ping3 import ping
 import numpy as np
 
 HOST = "10.13.23.144"
-PING_INTERVAL = 1  # seconds
+PING_INTERVAL = .5  # seconds
 RUN_DURATION = 10  # seconds
 MAX_POINTS = 100
 
@@ -14,10 +14,10 @@ rtts = []
 
 plt.ion()
 fig, ax = plt.subplots()
-line, = ax.plot_date(times, rtts, '-o', label='Ping RTT (ms)')
+line, = ax.plot_date(times, rtts, '-o')
 ax.set_ylabel("Round-trip time (ms)")
 ax.set_xlabel("Time")
-ax.set_title(f"Ping RTT to {HOST}")
+#ax.set_title(f"Ping RTT to {HOST}")
 ax.legend()
 fig.autofmt_xdate()
 
@@ -27,7 +27,7 @@ try:
     while datetime.now() < end_time:
         timestamp = datetime.now()
         try:
-            result = ping(HOST, timeout=1)
+            result = ping(HOST, timeout=2)
         except Exception as e:
             print(f"Ping error: {e}")
             result = None

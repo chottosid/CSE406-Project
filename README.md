@@ -1,140 +1,267 @@
-# CSE406 Network Security Project 1
+# CSE406 Network Security Project
 
 ## Overview
 
-This project implements various network security tools and attack simulations for educational purposes in cybersecurity research. The project consists of three main components: a packet flooding tool, a Ping of Death (PoD) attack implementation, and a network monitoring/logging utility.
+This project demonstrates various network security concepts through practical implementations of network testing and attack simulation tools. The project consists of three main components designed for educational purposes in controlled environments.
 
-⚠️ **DISCLAIMER: This project is for educational and research purposes only. Use these tools only on networks you own or have explicit permission to test. Unauthorized network attacks are illegal and unethical.**
+⚠️ **IMPORTANT DISCLAIMER**: These tools are for educational and authorized testing purposes only. Unauthorized use against systems you do not own or have explicit permission to test is illegal and unethical.
 
-## Components
+## Project Components
 
 ### 1. Packet Flooding Tool (`pf.cpp`)
-A high-performance network flooding tool that can generate massive amounts of network traffic for stress testing.
+
+A C++ implementation that performs network stress testing by sending a large volume of packets to a target.
 
 **Features:**
-- Multi-threaded packet generation for maximum throughput
-- Pre-generated packet pools for efficiency
-- Support for various packet types (ICMP, TCP, UDP)
-- Real-time statistics and bandwidth monitoring
-- Configurable thread count and packet batching
-- Aggressive and extreme flooding modes
 
-**Usage:**
+- High-speed packet generation
+- Configurable target IP and parameters
+- Network stress testing capabilities
+
+**Compilation & Usage:**
+
 ```bash
-# Compile the tool
-g++ -o pf pf.cpp -lpthread
+# Compile
+g++ -o pf pf.cpp
 
-# Run with root privileges (required for raw sockets)
-sudo ./pf <target_ip>
+# Run (requires root privileges)
+sudo ./pf
 ```
 
-### 2. Ping of Death (PoD) Attack (`pod.cpp`)
-An implementation of the classic Ping of Death attack that sends oversized ICMP packets to potentially crash vulnerable systems.
+### 2. Ping of Death Attack (`pod.cpp` & `pod2.py`)
 
-**Features:**
-- Generates fragmented ICMP packets larger than the maximum IP packet size
-- Uses IP fragmentation to bypass size restrictions
-- Configurable packet sizes (default ~128KB)
-- Spoofed source IP addresses
-- Real-time fragment transmission monitoring
+Implementation of the classic Ping of Death attack that sends oversized ICMP packets.
 
-**Usage:**
+#### C++ Version (`pod.cpp`)
+
 ```bash
-# Compile the tool
+# Compile
 g++ -o pod pod.cpp
 
-# Run with root privileges
-sudo ./pod <target_ip>
+# Run
+sudo ./pod
 ```
 
-### 3. Network Monitoring and Logging Tool (`log.py`)
-A Python-based network monitoring tool that performs continuous ping tests and visualizes network latency in real-time.
+#### Python Version (`pod2.py`)
 
-**Features:**
-- Real-time ping monitoring with configurable intervals
-- Live graphical visualization using matplotlib
-- Statistical analysis (min, max, average RTT)
-- Automatic plot saving and data logging
-- Graceful handling of timeouts and network errors
-- Customizable monitoring duration and target hosts
+**Dependencies:**
+
+- Python 3.x
+- Scapy library
+
+**Installation:**
+
+```bash
+# Install Scapy
+pip3 install scapy
+
+# For system-wide installation (if needed)
+sudo pip3 install scapy --break-system-packages
+```
 
 **Usage:**
+
 ```bash
-# Install required dependencies
-pip install ping3 matplotlib numpy
+sudo python3 pod2.py
+```
 
-# Run the monitoring tool
+**Configuration:**
+
+- Target IP: `10.13.23.144` (modify in script)
+- Payload size: ~165KB fragmented packets
+- Fragment size: 1480 bytes
+
+### 3. Network Monitoring Tool (`log.py`)
+
+Real-time network monitoring tool that tracks ping response times and visualizes network performance.
+
+**Features:**
+
+- Real-time RTT monitoring
+- Live graph visualization
+- Statistical analysis (avg, max, min RTT)
+- Plot export functionality
+
+**Dependencies:**
+
+- Python 3.x
+- matplotlib
+- numpy
+- ping3 (or system ping alternative)
+
+**Installation Options:**
+
+**Option 1: Install ping3 (if system allows)**
+
+```bash
+pip3 install ping3 matplotlib numpy
+```
+
+**Option 2: Use system ping (recommended for externally managed environments)**
+If you encounter "externally-managed-environment" error, replace the ping3 import in `log.py`:
+
+```python
+# Replace this line:
+from ping3 import ping
+
+# With this function:
+import subprocess
+import re
+
+def ping(host, timeout=1):
+    """System ping replacement for ping3"""
+    try:
+        result = subprocess.run(['ping', '-c', '1', '-W', str(timeout), host],
+                              capture_output=True, text=True, timeout=timeout+2)
+        if result.returncode == 0:
+            match = re.search(r'time=(\d+\.?\d*)', result.stdout)
+            if match:
+                return float(match.group(1)) / 1000  # Convert ms to seconds
+        return None
+    except:
+        return None
+```
+
+**Usage:**
+
+```bash
+# Try without sudo first (for GUI display)
 python3 log.py
+
+# If sudo needed for network access
+sudo -E python3 log.py
+
+# For display issues with sudo
+xhost +local:
+sudo python3 log.py
 ```
 
-## Project Structure
+**Configuration:**
 
+- Target host: `10.13.23.144`
+- Ping interval: 0.5 seconds
+- Run duration: 10 seconds
+- Max data points: 100
+
+## Technical Requirements
+
+### System Requirements
+
+- Linux operating system
+- Root/sudo privileges for network operations
+- Python 3.x
+- GCC compiler for C++ components
+
+### Network Requirements
+
+- Access to target network (10.13.23.144)
+- ICMP traffic allowed
+- Raw socket permissions
+
+### Python Dependencies
+
+```bash
+# Core dependencies
+pip3 install matplotlib numpy
+
+# For ping3 approach
+pip3 install ping3
+
+# Alternative: use system ping (no additional dependencies)
 ```
-CSE406-Project-1/
-├── pf.cpp          # Packet flooding tool source code
-├── pf              # Compiled packet flooding executable
-├── pod.cpp         # Ping of Death attack source code
-├── pod             # Compiled PoD executable
-├── log.py          # Network monitoring and visualization tool
-├── README.md       # This documentation file
-└── .gitignore      # Git ignore file
-```
 
-## Technical Details
+## Security Considerations
 
-### Compilation Requirements
+### ⚠️ Legal and Ethical Warnings
 
-**C++ Tools (pf.cpp, pod.cpp):**
-- GCC compiler with C++11 support or later
-- Linux operating system (uses Linux-specific networking APIs)
-- Root privileges for raw socket operations
+1. **Authorization Required**: Only use these tools on networks and systems you own or have explicit written permission to test
+2. **Educational Purpose**: These tools are designed for learning network security concepts
+3. **Controlled Environment**: Use only in isolated lab environments
+4. **Legal Compliance**: Ensure compliance with local laws and regulations
+5. **Responsible Disclosure**: If vulnerabilities are discovered, follow responsible disclosure practices
 
-**Python Tool (log.py):**
-- Python 3.6 or later
-- Required packages: `ping3`, `matplotlib`, `numpy`
+### Attack Implications
 
-### Security Considerations
+- **Packet Flooding**: Can cause network congestion and service degradation
+- **Ping of Death**: May crash or destabilize vulnerable systems
+- **Network Monitoring**: Generally benign but may trigger security alerts
 
-These tools implement actual network attack techniques and should be handled with extreme care:
+## Troubleshooting
 
-1. **Legal Compliance**: Only use on networks you own or have written permission to test
-2. **Ethical Use**: These tools are for education and authorized security testing only
-3. **Network Impact**: Packet flooding can cause network congestion and service disruption
-4. **System Vulnerabilities**: PoD attacks may crash vulnerable systems
+### Common Issues
 
-### Configuration Options
+1. **Permission Denied**
 
-**Packet Flooding Tool:**
-- `BATCH_SIZE`: Maximum packets per batch (default: 1000)
-- `PACKET_POOL_SIZE`: Pre-generated packet pool size (default: 5000)
-- `NUM_THREADS`: Number of concurrent threads (default: 8x CPU cores)
+   ```bash
+   sudo python3 script.py
+   ```
 
-**Ping of Death Tool:**
-- `POD_PACKET_SIZE`: Size of oversized packet (default: ~128KB)
-- `FRAG_SIZE`: Fragment size for IP fragmentation (default: 1472 bytes)
+2. **ping3 Module Not Found**
 
-**Monitoring Tool:**
-- `HOST`: Target IP address to monitor (default: "10.13.23.144")
-- `PING_INTERVAL`: Time between pings in seconds (default: 1)
-- `RUN_DURATION`: Total monitoring duration (default: 10 seconds)
+   - Install: `pip3 install ping3`
+   - Or use system ping alternative (see above)
+
+3. **Externally Managed Environment Error**
+
+   ```bash
+   sudo pip3 install package --break-system-packages
+   ```
+
+   Or use virtual environment:
+
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install ping3
+   ```
+
+4. **GUI Display Issues with sudo**
+
+   ```bash
+   xhost +local:
+   sudo -E python3 log.py
+   ```
+
+5. **Scapy Import Errors**
+   ```bash
+   pip3 install scapy
+   ```
 
 ## Educational Objectives
 
 This project demonstrates:
-1. **Network Protocol Understanding**: Low-level IP and ICMP packet manipulation
-2. **Socket Programming**: Raw socket creation and management in C++
-3. **Multi-threading**: Concurrent programming for high-performance networking
-4. **Network Security**: Common attack vectors and their implementations
-5. **Monitoring and Analysis**: Real-time network performance visualization
 
-## License
+1. **Network Protocol Understanding**: Low-level packet manipulation and ICMP protocol
+2. **Security Testing Methodologies**: Stress testing and vulnerability assessment
+3. **Network Monitoring**: Real-time performance analysis and visualization
+4. **Attack Vectors**: Understanding how network attacks work and their impact
+5. **Defense Strategies**: Recognizing attack patterns and implementing countermeasures
 
-This project is developed for educational purposes as part of CSE406 coursework. Please ensure compliance with your institution's policies and local laws when using these tools.
+## File Structure
 
-## Contributing
+```
+CSE406-Project-1/
+├── README.md           # This documentation
+├── pf.cpp              # Packet flooding tool (C++)
+├── pod.cpp             # Ping of Death (C++)
+├── pod2.py             # Ping of Death (Python/Scapy)
+└── log.py              # Network monitoring tool
+```
 
-This is an academic project. If you're a student working on similar coursework, please ensure you follow your institution's academic integrity policies.
+## Output Files
 
-## Support
+- `ping_plot.png`: Generated graph from log.py showing RTT over time
+- Compiled executables: `pf`, `pod`
 
-For questions related to this project, please consult your course materials or contact your instructor.
+## Academic Context
+
+This project is part of CSE406 (Network Security) coursework, focusing on:
+
+- Understanding network vulnerabilities
+- Implementing security testing tools
+- Analyzing network behavior under stress
+- Learning ethical hacking principles
+
+---
+
+**Remember**: With great power comes great responsibility. Use these tools wisely and ethically.

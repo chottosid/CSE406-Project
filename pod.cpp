@@ -13,7 +13,7 @@
 #define IP_HDRLEN 20
 #define ICMP_HDRLEN 8
 #define FRAG_SIZE 1472         // Common MTU - IP header (20 bytes)
-#define POD_PACKET_SIZE 85535 // Much larger than IP_MAXPACKET for effective PoD
+#define POD_PACKET_SIZE 65535 // Much larger than IP_MAXPACKET for effective PoD
 
 unsigned short checksum(void *vdata, size_t length)
 {
